@@ -1,0 +1,178 @@
+
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta charset="UTF-8">
+
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	
+	<title>fisheye.ts</title>
+	
+	<style>
+		html, body {
+			margin: 0;
+			padding: 0;
+		}
+		
+		a {
+			text-decoration: none;
+		}
+		
+		body > h1 {
+			text-align: center;
+		}
+		
+		h1 {
+			padding-left: 1em;
+			padding-right: 1em;
+		}
+		
+		h1, h2 {
+			font-family: sans-serif;
+			font-weight: lighter;
+			font-style: normal;
+		}
+		
+		h3 {
+			font-family: sans-serif;
+			font-style: bold;
+			font-variant: small-caps;
+		}
+		
+		#sandbox {
+			display: flex;
+			justify-content: space-around;
+
+			display : -webkit-flex;
+			-webkit-justify-content: space-around;
+			
+			width: 100%;
+		}
+		
+		#controls {
+			box-sizing: border-box;
+			flex-basis: 20vw;
+			-webkit-flex-basis: 20vw;
+			
+			padding: 0 1em 0 1em;
+		}
+		
+		#controls input {
+			width: 100%;
+		}
+		
+		#picker-container {
+			position: relative;
+			
+			width: 100%;
+			height: 3em;
+			
+			font-size: 1.25em;
+			font-family: sans-serif;
+			
+			margin-top: 1em;
+		}
+		
+		#picker-container::before {
+			position: absolute;
+			top: 0;
+			left: 0;
+			bottom: 0;
+			right: 0;
+		
+			padding: 1em;
+		
+			content: 'pick another image';
+			
+			text-align: center;
+		}
+		
+		#picker-container > input {
+			width: 100%;
+			height: 100%;
+		
+			cursor: pointer;
+		
+			opacity: 0 !important;
+		}
+		
+		@media (max-width: 768px) {
+			
+			canvas {
+				height: 100vw;
+			}
+			
+			#sandbox {
+				flex-direction: column;
+				-webkit-flex-direction: column;
+			}
+			
+			#controls {
+				width: 100vw;
+				padding: 0 10% 10% 10%;
+				
+				flex-basis: auto;
+				-webkit-flex-basis: auto;
+			}
+		}
+	</style>
+	
+	<script src="fisheye.js"></script>
+</head>
+</head>
+<body>
+	<h1>radial lens distortion with fisheye.ts</h1>
+	<div id="sandbox">
+		<canvas id="canvas" width="640" height="640"></canvas>
+		<div id="controls">
+			<h2>distortion</h2>
+			<div><input id="all" type="range" min="-10" max="10" value="5" step="0.1" /></div>
+			<h2>color channels</h2>
+			<div><h3>red</h3><input id="red" type="range" min="-10" max="10" value="5" step="0.1" /></div>
+			<div><h3>green</h3><input id="green" type="range" min="-10" max="10" value="5" step="0.1" /></div>
+			<div><h3>blue</h3><input id="blue" type="range" min="-10" max="10" value="5" step="0.1" /></div>
+			<div id="picker-container"><input id="picker" type="file" accept="image/*" /></div>
+		</div>
+	</div>
+	
+	<script type="text/javascript">
+		var canvas = document.getElementById('canvas');
+		var fisheye = new Fisheye(canvas);
+		
+		var img;
+		
+		var red = document.getElementById('red');
+		var green = document.getElementById('green');
+		var blue = document.getElementById('blue');
+
+		var update = function() {
+			fisheye.setViewport(canvas.width, canvas.height);
+			fisheye.setDistortion(red.value, green.value, blue.value);
+			fisheye.clear();
+			fisheye.draw(img);
+		};
+		
+		var ie11 = !(window.ActiveXObject) && "ActiveXObject" in window;
+		var eventType = ie11 ? 'change' : 'input';
+
+		red.addEventListener(eventType, update);
+		green.addEventListener(eventType, update);
+		blue.addEventListener(eventType, update);
+		
+		var all = document.getElementById('all');
+		all.addEventListener(eventType, function() {
+			red.value = all.value;
+			green.value = all.value;
+			blue.value = all.value;
+			
+			update();
+		});
+	
+		img = new Image();
+		img.addEventListener('load', update, false);
+		img.src = './rainbow-glass.jpg';
+		
+		
+	</script>
+</body>
+</html>
